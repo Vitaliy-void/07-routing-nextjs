@@ -1,0 +1,14 @@
+/* app/not-found.module.css */
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 24px 0 8px;
+  text-align: center;
+}
+
+.description {
+  font-size: 16px;
+  color: #4b5563; /* сірий */
+  text-align: center;
+}
