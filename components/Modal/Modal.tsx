@@ -22,7 +22,7 @@ function ensureRoot(): HTMLElement {
 }
 
 export default function Modal({ isOpen, onClose, children }: ModalProps) {
-  // Escape
+  // ESC
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -30,13 +30,13 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
-  // Block body scroll
+  // block body scroll
   useEffect(() => {
     if (!isOpen) return;
     const prevOverflow = document.body.style.overflow;
     const prevPaddingRight = document.body.style.paddingRight;
-
     const scrollbar = window.innerWidth - document.documentElement.clientWidth;
+
     document.body.style.overflow = "hidden";
     if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
 

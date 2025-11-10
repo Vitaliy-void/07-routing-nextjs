@@ -1,4 +1,3 @@
-"use client";
 import Link from "next/link";
 import css from "./NoteList.module.css";
 import type { Note } from "@/types/note";
@@ -16,7 +15,7 @@ export default function NoteList({ items }: NoteListProps) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notes"] }),
   });
 
-  if (!items.length) return null;
+  if (items.length === 0) return null;
 
   return (
     <ul className={css.list}>
@@ -24,10 +23,19 @@ export default function NoteList({ items }: NoteListProps) {
         <li key={n.id} className={css.listItem}>
           <h2 className={css.title}>{n.title}</h2>
           <p className={css.content}>{n.content}</p>
+
           <div className={css.footer}>
             <span className={css.tag}>{n.tag}</span>
-            <Link className={css.link} href={`/notes/${n.id}`}>View details</Link>
-            <button className={css.button} disabled={isPending} onClick={() => mutate(n.id)}>
+
+            <Link className={css.link} href={`/notes/${n.id}`}>
+              View details
+            </Link>
+
+            <button
+              className={css.button}
+              disabled={isPending}
+              onClick={() => mutate(n.id)}
+            >
               Delete
             </button>
           </div>

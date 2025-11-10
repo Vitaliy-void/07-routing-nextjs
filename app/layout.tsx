@@ -1,3 +1,5 @@
+import "modern-normalize/modern-normalize.css";
+import "./globals.css";
 import type { Metadata } from "next";
 import "./globals.css";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
