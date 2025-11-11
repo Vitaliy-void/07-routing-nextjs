@@ -12,7 +12,7 @@ export default function NoteDetailsClient() {
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
     enabled: !!id,
-    refetchOnMount: false, // вимога автоперевірки
+    refetchOnMount: false, 
   });
 
   if (isLoading) {
