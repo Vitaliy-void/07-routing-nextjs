@@ -4,7 +4,7 @@ import * as React from "react";
 import type { JSX } from 'react';
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
-import css from "@/styles/NotesPage.module.css";
+import css from "./page.module.css";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import NoteList from "@/components/NoteList/NoteList";
