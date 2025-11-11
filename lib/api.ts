@@ -33,7 +33,7 @@ export async function fetchNotes(params: FetchNotesParams = {}): Promise<FetchNo
     params: {
       page, perPage,
       ...(search ? { search } : {}),
-      ...(tag ? { tag } : {}),    // якщо tag не передавати — бекенд поверне всі
+      ...(tag ? { tag } : {}),    
     },
   });
   return res.data;

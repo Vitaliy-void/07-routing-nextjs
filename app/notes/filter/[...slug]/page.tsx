@@ -1,12 +1,22 @@
-import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
-// ІМПОРТУЙ тип, якщо він уже є
 import type { NoteTag } from "@/types/note";
 import NotesClient from "../Notes.client";
 
 const PER_PAGE = 12;
-// Якщо не експортуєш список тегів із types/note.ts – оголоси локально:
-const ALLOWED_TAGS = ["Todo", "Work", "Personal", "Meeting", "Shopping"] as const;
+
+
+const ALLOWED_TAGS: readonly NoteTag[] = [
+  "Todo",
+  "Work",
+  "Personal",
+  "Meeting",
+  "Shopping",
+] as const;
+
+function isNoteTag(v: unknown): v is NoteTag {
+  return typeof v === "string" && (ALLOWED_TAGS as readonly string[]).includes(v);
+}
 
 export default async function FilteredNotesPage({
   params,
@@ -18,12 +28,10 @@ export default async function FilteredNotesPage({
   const p = await params;
   const sp = await searchParams;
 
-  const tagRaw = p.slug?.[0];                 // "all" | "Todo" | ...
-  // "all" -> не передаємо tag в API; інакше – перевіряємо на валідність
+  const raw = p.slug?.[0];
+
   const tag: NoteTag | undefined =
-    tagRaw === "all"
-      ? undefined
-      : (ALLOWED_TAGS.includes(tagRaw as NoteTag) ? (tagRaw as NoteTag) : undefined);
+    raw && raw !== "all" && isNoteTag(raw) ? raw : undefined;
 
   const page = Math.max(1, Number(sp.page ?? "1"));
   const search = (sp.search ?? "").trim();

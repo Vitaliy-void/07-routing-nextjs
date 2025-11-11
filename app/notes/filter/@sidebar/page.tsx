@@ -1,6 +1,5 @@
 import css from "./page.module.css";
 
-// перелік тегів задаємо в коді (бекенд список не віддає)
 const TAGS = ["Todo", "Work", "Personal", "Meeting", "Shopping"] as const;
 
 export default function SidebarNotes() {

@@ -1,3 +1,3 @@
-export default function DefaultModalSlot() {
-  return null; // порожній вміст, якщо нічого не перехоплюємо
+export default function Default() {
+  return null;
 }
