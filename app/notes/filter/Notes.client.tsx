@@ -1,87 +1,62 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useDebounce } from "use-debounce";
+import * as React from "react";
+import type { JSX } from 'react';
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
-import css from "./page.module.css";
-
+import css from "@/styles/NotesPage.module.css";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import NoteList from "@/components/NoteList/NoteList";
-import Modal from "@/components/Modal/Modal";
-import NoteForm from "@/components/NoteForm/NoteForm";
-import { useRouter, useSearchParams } from "next/navigation";
+import type { NoteTag } from "@/types/note";
 
-type NoteTag = "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+export interface NotesClientProps {
+  initialPage: number;
+  initialSearch: string;
+  perPage: number;
+  initialTag: NoteTag | "all";
+}
 
 export default function NotesClient({
   initialPage,
   initialSearch,
-  initialTag,  // "all" | NoteTag
   perPage,
-}: {
-  initialPage: number;
-  initialSearch: string;
-  initialTag: string;
-  perPage: number;
-}) {
-  const [page, setPage] = useState(initialPage);
-  const [search, setSearch] = useState(initialSearch);
-  const [searchDebounced] = useDebounce(search, 500);
-  const [isModal, setIsModal] = useState(false);
+  initialTag,
+}: NotesClientProps): JSX.Element {
+  const [page, setPage] = React.useState(initialPage);
+  const [search, setSearch] = React.useState(initialSearch);
 
-  const router = useRouter();
-  const sp = useSearchParams();
+  const tag: NoteTag | undefined =
+    initialTag === "all" ? undefined : (initialTag as NoteTag);
 
-  // Синхронізуємо URL (page/search), тег приходить із сегмента шляху
-  useEffect(() => {
-    const params = new URLSearchParams(sp.toString());
-    params.set("page", String(page));
-    if (searchDebounced) params.set("search", searchDebounced);
-    else params.delete("search");
-    router.replace(`?${params.toString()}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, searchDebounced]);
-
-  const tag = initialTag === "all" ? undefined : (initialTag as NoteTag);
-
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["notes", page, perPage, searchDebounced, initialTag],
-    queryFn: () => fetchNotes({ page, perPage, search: searchDebounced, tag }),
-    staleTime: 30_000,
+  const { data, isPending, error } = useQuery({
+    queryKey: ["notes", page, perPage, search, tag ?? "all"],
+    queryFn: () => fetchNotes({ page, perPage, search, tag }),
     placeholderData: keepPreviousData,
+    refetchOnMount: false,
   });
 
-  const notes = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 0;
-
   return (
-    <div className={css.app}>
-      <header className={css.toolbar}>
-        <SearchBox
-          value={search}
-          onChange={(v) => {
-            setPage(1);
-            setSearch(v);
-          }}
+    <div className={css.container}>
+      <div className={css.toolbar}>
+        <SearchBox value={search} onChange={(v) => { setPage(1); setSearch(v); }} />
+      </div>
+
+      {isPending && <p>Loading, please wait...</p>}
+      {error && <p>Something went wrong.</p>}
+      {data?.notes?.length ? (
+        <NoteList items={data.notes} />
+      ) : (
+        !isPending && <p>No notes yet</p>
+      )}
+
+      {data?.totalPages && data.totalPages > 1 && (
+        <Pagination
+          pageCount={data.totalPages}
+          currentPage={page}
+          onPageChange={(p) => setPage(p)}
         />
-        {totalPages > 1 && (
-          <Pagination pageCount={totalPages} currentPage={page} onPageChange={setPage} />
-        )}
-        <button className={css.button} onClick={() => setIsModal(true)}>
-          Create note +
-        </button>
-      </header>
-
-      {isLoading && <p style={{ padding: 16 }}>Loading…</p>}
-      {isError && <p style={{ padding: 16, color: "crimson" }}>{(error as Error)?.message ?? "Request error"}</p>}
-
-      {notes.length ? <NoteList items={notes} /> : !isLoading && <p style={{ padding: 16 }}>No notes yet</p>}
-
-      <Modal isOpen={isModal} onClose={() => setIsModal(false)}>
-        <NoteForm onCancel={() => setIsModal(false)} />
-      </Modal>
+      )}
     </div>
   );
 }
