@@ -1,24 +1,18 @@
+// app/notes/filter/layout.tsx
 import type { ReactNode } from "react";
 import css from "./layout.module.css";
 
-export default function FilterLayout({
-  children,         // основний контент (список)
-  sidebar,          // @sidebar меню тегів
-  modal,            // @modal (для перехоплення /notes/[id])
+export default function Layout({
+  children,
+  sidebar,
 }: {
   children: ReactNode;
   sidebar: ReactNode;
-  modal: ReactNode;
 }) {
   return (
-    <div className={css.shell}>
+    <div className={css.layout}>
       <aside className={css.sidebar}>{sidebar}</aside>
-      <main className={css.main}>
-        {children}
-      </main>
-
-      {/* перехоплений контент рендеримо поверх */}
-      {modal}
+      <section className={css.content}>{children}</section>
     </div>
   );
 }
