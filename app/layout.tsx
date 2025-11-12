@@ -1,24 +1,29 @@
-import "modern-normalize/modern-normalize.css";
-import "./globals.css";
 import type { Metadata } from "next";
 import "./globals.css";
-import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
+import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 
 export const metadata: Metadata = {
-  title: "NoteHub",
-  description: "Notes app with Next.js + TanStack Query",
+  title: "Notes",
+  description: "App Router + TanStack Query + Parallel routes",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+  modal,             // <-- додано
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode; // <-- обов’язково типізувати
+}) {
   return (
     <html lang="en">
       <body>
         <TanStackProvider>
           <Header />
-          {children}
+          <main>{children}</main>
           <Footer />
+          {modal}
         </TanStackProvider>
       </body>
     </html>

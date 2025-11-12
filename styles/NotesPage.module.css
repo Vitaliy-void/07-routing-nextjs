@@ -1,0 +1,10 @@
+.wrapper { display: grid; gap: 16px; }
+.searchBar { display: flex; gap: 8px; }
+.input { flex: 1; padding: 8px 10px; }
+.btn { padding: 8px 12px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+.list { display: grid; gap: 12px; list-style: none; padding: 0; margin: 0; }
+.item { border: 1px solid #eee; padding: 12px; border-radius: 8px; }
+.title { font-weight: 600; text-decoration: none; }
+.meta { color: #666; font-size: 12px; margin-top: 4px; }
+.pagination { display: flex; align-items: center; gap: 12px; }
+.pageInfo { font-size: 14px; }
