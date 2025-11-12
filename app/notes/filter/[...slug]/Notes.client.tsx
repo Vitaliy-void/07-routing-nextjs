@@ -53,7 +53,7 @@ export default function Notes({ tag }: NotesProps) {
       {isError && <p>Failed to load notes.</p>}
 
       <ul className={css.list}>
-        {items.map((n: Note) => ( // ✅ тип для n
+        {items.map((n: Note) => ( 
           <li key={n.id} className={css.item}>
             <Link href={`/notes/${n.id}`} className={css.title}>
               {n.title}
