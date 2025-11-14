@@ -1,3 +1,4 @@
+import Link from "next/link";
 import css from "./Footer.module.css";
 
 export default function Footer() {
@@ -6,10 +7,12 @@ export default function Footer() {
       <div className={css.content}>
         <p>© {new Date().getFullYear()} NoteHub. All rights reserved.</p>
         <div className={css.wrap}>
-          <p>Developer: Vitaliy Bashkir</p>
+          <p>Developer: Oleksii Kyryk</p>
           <p>
-            Contact us:{" "}
-            <a href="mailto:student@notehub.app">student@notehub.app</a>
+            Contact us:
+            <Link href="mailto:kirikoleksiy112@gmail.com">
+              &nbsp;kirikoleksiy112@gmail.com
+            </Link>
           </p>
         </div>
       </div>

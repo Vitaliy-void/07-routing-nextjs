@@ -1,54 +1,65 @@
-import axios, { type AxiosInstance } from "axios";
-import type { Note, NoteTag } from "@/types/note";
+import axios from "axios";
+import type { Note, PostNote } from "../types/note";
 
-const API = "https://notehub-public.goit.study/api";
-const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN as string | undefined;
-
-const http: AxiosInstance = axios.create({
-  baseURL: API,
-  headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-});
-
-export interface FetchNotesParams {
-  page?: number;
-  perPage?: number;
-  search?: string;
-  tag?: NoteTag; // NEW
-}
-
-export interface FetchNotesResponse {
+export interface ApiNotesResponse {
   notes: Note[];
   totalPages: number;
 }
 
-export interface CreateNoteBody {
-  title: string;
-  content?: string;
-  tag: NoteTag;
+interface apiTypes {
+  API_KEY: string | undefined;
+  BASE_URL: string;
+  ENDPOINTS: {
+    notes: () => string;
+    delNote: (id: string) => string;
+  };
 }
 
-export async function fetchNotes(params: FetchNotesParams = {}): Promise<FetchNotesResponse> {
-  const { page = 1, perPage = 12, search = "", tag } = params;
-  const res = await http.get<FetchNotesResponse>("/notes", {
+const apiNoteHub: apiTypes = {
+  API_KEY: process.env.NEXT_PUBLIC_NOTEHUB_TOKEN,
+  BASE_URL: "https://notehub-public.goit.study/api",
+  ENDPOINTS: {
+    notes: () => `/notes`,
+    delNote: (id) => `/notes/${id}`,
+  },
+};
+const { BASE_URL, API_KEY, ENDPOINTS } = apiNoteHub;
+
+const api = axios.create({
+  baseURL: `${BASE_URL}`,
+  headers: {
+    Authorization: `Bearer ${API_KEY}`,
+    "Content-Type": "application/json",
+  },
+});
+
+export async function fetchNotes(
+  search: string,
+  page: number,
+  tag?: string
+): Promise<ApiNotesResponse> {
+  const { data } = await api.get<ApiNotesResponse>(ENDPOINTS.notes(), {
     params: {
-      page, perPage,
-      ...(search ? { search } : {}),
-      ...(tag ? { tag } : {}),    
+      ...(!!search && { search }),
+      page: page,
+      perPage: 12,
+      ...(!!tag && { tag }),
     },
   });
-  return res.data;
+  return data;
 }
 
-export async function fetchNoteById(id: string): Promise<Note> {
-  const res = await http.get<Note>(`/notes/${id}`);
-  return res.data;
+export async function fetchSingleNote(id: string): Promise<Note> {
+  const { data } = await api.get<Note>(`${ENDPOINTS.notes()}/${id}`);
+  return data;
 }
 
-export async function createNote(body: CreateNoteBody): Promise<Note> {
-  const res = await http.post<Note>("/notes", body);
-  return res.data;
-}
 export async function deleteNote(id: string): Promise<Note> {
-  const res = await http.delete<Note>(`/notes/${id}`);
-  return res.data;
+  const { data } = await api.delete<Note>(ENDPOINTS.delNote(id));
+  return data;
+}
+
+export async function createNote(note: PostNote): Promise<Note> {
+  const { data } = await api.post<Note>(ENDPOINTS.notes(), note);
+  return data;
 }

@@ -1,61 +1,40 @@
-"use client";
-
-import { useEffect } from "react";
-import type { ReactNode, MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import css from "./Modal.module.css";
+import { useEffect } from "react";
 
-export interface ModalProps {
-  isOpen: boolean;
+interface ModalProps {
+  children: React.ReactNode;
   onClose: () => void;
-  children: ReactNode;
 }
 
-function ensureRoot(): HTMLElement {
-  let el = document.getElementById("modal-root") as HTMLElement | null;
-  if (!el) {
-    el = document.createElement("div");
-    el.id = "modal-root";
-    document.body.appendChild(el);
-  }
-  return el;
-}
-
-export default function Modal({ isOpen, onClose, children }: ModalProps) {
-  // ESC
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose]);
-
-  // block body scroll
-  useEffect(() => {
-    if (!isOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    const prevPaddingRight = document.body.style.paddingRight;
-    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.style.overflow = "hidden";
-    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
-
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.paddingRight = prevPaddingRight;
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const onBackdrop = (e: MouseEvent<HTMLDivElement>) => {
+export default function Modal({ children, onClose }: ModalProps) {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
   return createPortal(
-    <div className={css.backdrop} role="dialog" aria-modal="true" onClick={onBackdrop}>
+    <div
+      className={css.backdrop}
+      role="dialog"
+      aria-modal="true"
+      onClick={handleBackdropClick}
+    >
       <div className={css.modal}>{children}</div>
     </div>,
-    ensureRoot(),
+    document.body
   );
 }

@@ -1,7 +1,8 @@
 .input {
-  width:320px; max-width:100%;
-  padding:10px 12px; border-radius:8px;
-  border:1px solid #d1d5db; background:#fff;
-  outline:none; transition:border-color .15s ease;
+  flex: 1;
+  max-width: 240px;
+  padding: 6px 12px;
+  font-size: 16px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
 }
-.input:focus { border-color:#2563eb; }
