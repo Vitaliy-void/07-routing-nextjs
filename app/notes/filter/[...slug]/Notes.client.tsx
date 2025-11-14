@@ -1,85 +1,73 @@
 "use client";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import { ApiNotesResponse, fetchNotes } from "@/lib/api";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
+import css from "./Notes.module.css";
+import Pagination from "@/components/Pagination/Pagination";
+import Loader from "@/components/Loader/Loader";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import NoteList from "@/components/NoteList/NoteList";
+import Modal from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
-import Link from "next/link";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
-import type { Note, NoteTag } from "@/types/note";
-import css from "./page.module.css"; 
+function Notes({ initialCategory = "" }: { initialCategory?: string }) {
+  const [query, setQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [category, setCategory] = useState(initialCategory);
 
-type NotesProps = { tag?: NoteTag | "all" };
-const PER_PAGE = 12;
+  useEffect(() => {
+    setCategory(initialCategory);
+    setCurrentPage(1);
+  }, [initialCategory]);
 
-export default function Notes({ tag }: NotesProps) {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    setQuery(value);
+    setCurrentPage(1);
+  }, 300);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["notes", tag ?? "all", page, search],
-    queryFn: () =>
-      fetchNotes({
-        page,
-        perPage: PER_PAGE,
-        search,
-        tag: tag && tag !== "all" ? (tag as NoteTag) : undefined,
-      }),
-    placeholderData: keepPreviousData,
-  });
+  const { data, isError, isLoading, isSuccess, error } =
+    useQuery<ApiNotesResponse>({
+      queryKey: ["notes", query, currentPage, category],
+      queryFn: () => fetchNotes(query, currentPage, category),
+      placeholderData: currentPage > 1 ? keepPreviousData : undefined,
+    });
+  const totalPages = data?.totalPages ?? 0;
 
-  const items: Note[] = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 1;
-
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setPage(1);
-  };
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-  };
+  if (isError && error) throw error;
 
   return (
-    <section className={css.wrapper}>
-      <form className={css.searchBar} onSubmit={onSubmit}>
-        <input
-          value={search}
-          onChange={onChange}
-          placeholder="Search notes..."
-          className={css.input}
-        />
-        <button type="submit" className={css.btn}>Search</button>
-      </form>
+    <div className={css.app}>
+      <section className={css.toolbar}>
+        <SearchBox onSearch={debouncedSearch} />
 
-      {isLoading && <p>Loading notes...</p>}
-      {isError && <p>Failed to load notes.</p>}
+        {isSuccess && totalPages > 1 && (
+          <Pagination
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+          />
+        )}
 
-      <ul className={css.list}>
-        {items.map((n: Note) => ( 
-          <li key={n.id} className={css.item}>
-            <Link href={`/notes/${n.id}`} className={css.title}>
-              {n.title}
-            </Link>
-            {n.content && <p className={css.content}>{n.content}</p>}
-            {n.createdAt && (
-              <p className={css.date}>{new Date(n.createdAt).toLocaleString()}</p>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <div className={css.pagination}>
-        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>
-          Prev
+        <button className={css.button} onClick={() => setIsModalOpen(true)}>
+          Create note +
         </button>
-        <span>
-          {page} / {totalPages}
-        </span>
-        <button
-          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-          disabled={page >= totalPages}
-        >
-          Next
-        </button>
-      </div>
-    </section>
+      </section>
+      {isLoading && <Loader>Loading notes, please wait...</Loader>}
+      {data && data.notes.length === 0 && (
+        <ErrorMessage>Not Found!</ErrorMessage>
+      )}
+      {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
+
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm onClose={() => setIsModalOpen(false)} />
+        </Modal>
+      )}
+    </div>
   );
 }
+
+export default Notes;

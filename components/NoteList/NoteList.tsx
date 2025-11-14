@@ -1,43 +1,40 @@
+"use client";
+import type { Note } from "@/types/note";
 import Link from "next/link";
 import css from "./NoteList.module.css";
-import type { Note } from "@/types/note";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteNote } from "@/lib/api";
 
 export interface NoteListProps {
-  items: Note[];
+  notes: Note[];
+  onDelete?: (id: string) => void; // опційно
 }
 
-export default function NoteList({ items }: NoteListProps) {
-  const qc = useQueryClient();
-  const { mutate, isPending } = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["notes"] }),
-  });
-
-  if (items.length === 0) return null;
-
+export default function NoteList({ notes, onDelete }: NoteListProps) {
   return (
     <ul className={css.list}>
-      {items.map((n) => (
-        <li key={n.id} className={css.listItem}>
-          <h2 className={css.title}>{n.title}</h2>
-          <p className={css.content}>{n.content}</p>
+      {notes.map((n) => (
+        <li key={n.id} className={css.item}>
+          <h3 className={css.title}>
+            <Link href={`/notes/${n.id}`}>{n.title}</Link>
+          </h3>
 
-          <div className={css.footer}>
+          {n.content && <p className={css.content}>{n.content}</p>}
+
+          <div className={css.row}>
             <span className={css.tag}>{n.tag}</span>
 
-            <Link className={css.link} href={`/notes/${n.id}`}>
-              View details
-            </Link>
-
-            <button
-              className={css.button}
-              disabled={isPending}
-              onClick={() => mutate(n.id)}
-            >
-              Delete
-            </button>
+            <div className={css.actions}>
+              <Link className={`${css.btn} ${css.btnPrimary}`} href={`/notes/${n.id}`}>
+                View details
+              </Link>
+              <button
+                type="button"
+                className={`${css.btn} ${css.btnDanger}`}
+                onClick={() => onDelete?.(n.id)}
+                aria-label={`Delete note ${n.title}`}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </li>
       ))}

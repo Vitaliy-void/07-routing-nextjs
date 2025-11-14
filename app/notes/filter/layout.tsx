@@ -1,18 +1,20 @@
-// app/notes/filter/layout.tsx
-import type { ReactNode } from "react";
-import css from "./layout.module.css";
+import css from "./NotesLayout.module.css";
 
-export default function Layout({
+function NotesLayout({
   children,
   sidebar,
-}: {
-  children: ReactNode;
-  sidebar: ReactNode;
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+  sidebar: React.ReactNode;
+}>) {
   return (
-    <div className={css.layout}>
-      <aside className={css.sidebar}>{sidebar}</aside>
-      <section className={css.content}>{children}</section>
-    </div>
+    <>
+      <section className={css.notesWrapper}>
+        <aside className={css.sidebar}>{sidebar}</aside>
+        <div className={css.container}>{children}</div>
+      </section>
+    </>
   );
 }
+
+export default NotesLayout;
